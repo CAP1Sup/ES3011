@@ -1,7 +1,7 @@
 %% Initialize the system constants
 m = 5; % kg
 k = 1.0; % N/m
-b = 0.5; % Ns/m
+b = 0.5; % N*s/m
 F = 2; % N
 
 %% Set up state space matrices
