@@ -15,10 +15,10 @@ figure;
 for Kp = Kp_values
     % Create a proportional controller
     C = pid(Kp);
-    
+
     % The closed-loop system with the controller
     T = feedback(C*P_car,1);
-    
+
     % Step response for the closed-loop system
     step(T,0:0.1:200);
     hold on;
@@ -26,17 +26,7 @@ end
 
 % Customize the plot
 title('Step Responses for Proportional Gain Controllers');
-xlabel('Time (seconds)');
-ylabel('Velocity (v)');
+xlabel('Time');
+ylabel('Velocity (m/s)');
 legend('Kp = 1','Kp = 10','Kp = 50');
 hold off;
-
-% Define the plant
-P_car = 1/(m*s + b);
-
-% Initial guess for the PID controller
-Kp = 100; Ki = 1; Kd = 1;
-C = pid(Kp, Ki, Kd);
-
-% Open the PID Tuner
-pidTuner(P_car, C);
