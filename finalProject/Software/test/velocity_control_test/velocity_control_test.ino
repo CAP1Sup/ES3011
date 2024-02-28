@@ -2,12 +2,12 @@
 #include <Wire.h>
 
 // TEST PARAMETERS
-#define ACCEL_TIME 1 // s
-#define MAX_VEL_TIME 1.5 // s
+#define ACCEL_TIME 1.5 // s
+#define MAX_VEL_TIME 1 // s
 #define RPM_INCREMENT_PERIOD 10 // ms
 #define INITIAL_RPM 0.0
-#define MAX_RPM 119.37
-#define RPM_INCREMENT MAX_RPM / (ACCEL_TIME / (RPM_INCREMENT_PERIOD/1000))
+#define MAX_RPM 92.75 // Best run: 92.75
+#define RPM_INCREMENT MAX_RPM / (ACCEL_TIME / (RPM_INCREMENT_PERIOD/1000.0))
 #define MOTOR_NUM 1
 // #define MOTOR_NUM 3
 
@@ -149,7 +149,7 @@ void createTriangularVelocityProfile(byte addr) {
     // Increment velocity from INITIAL_RPM to MAX_RPM
     for (double vel = INITIAL_RPM; vel <= MAX_RPM; vel += RPM_INCREMENT) {
         setVelocity(addr, vel); // Set motor velocity
-        delay(10); // Adjust this delay as needed
+        delay(RPM_INCREMENT_PERIOD); // Adjust this delay as needed
         read(addr); // Read the actual velocity from the motor driver
         Serial.print(vel); // Send target velocity
         Serial.print(", ");
@@ -159,7 +159,7 @@ void createTriangularVelocityProfile(byte addr) {
     // Decrement velocity from MAX_RPM to INITIAL_RPM
     for (double vel = MAX_RPM; vel >= INITIAL_RPM; vel -= RPM_INCREMENT) {
         setVelocity(addr, vel); // Set motor velocity
-        delay(10); // Adjust this delay as needed
+        delay(RPM_INCREMENT_PERIOD); // Adjust this delay as needed
         read(addr); // Read the actual velocity from the motor driver
         Serial.print(vel); // Send target velocity
         Serial.print(", ");
@@ -179,7 +179,7 @@ void createTrapezoidalVelocityProfile(byte addr) {
     }
 
     // Run at the max velocity for the specified time
-    delay(MAX_VEL_TIME);
+    delay(MAX_VEL_TIME * 1000);
 
     // Decrement velocity from MAX_RPM to INITIAL_RPM
     for (double vel = MAX_RPM; vel >= INITIAL_RPM; vel -= RPM_INCREMENT) {
@@ -195,15 +195,17 @@ void createTrapezoidalVelocityProfile(byte addr) {
 void setup() {
     Serial.begin(9600);
     Wire.begin(); // INIT DEVICE AS I2C CONTROLLER
+    Serial.println("Starting");
+    delay(3000);
+
+    // FOR EACH MOTOR ADDRESS
+    for (int i = 0; i < MOTOR_NUM; i++) {
+        byte addr = motorAddrs[i];
+        createTrapezoidalVelocityProfile(addr); // Create triangular velocity profile for each motor
+    }
 }
 
 
 void loop() {
-    // FOR EACH MOTOR ADDRESS
-    for (int i = 0; i < MOTOR_NUM; i++) {
-        byte addr = motorAddrs[i];
-        createTriangularVelocityProfile(addr); // Create triangular velocity profile for each motor
-    }
-
     delay(1000);
 }
