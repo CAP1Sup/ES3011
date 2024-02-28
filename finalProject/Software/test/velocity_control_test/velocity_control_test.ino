@@ -2,10 +2,12 @@
 #include <Wire.h>
 
 // TEST PARAMETERS
-//#define INITIAL_RPM 35.0
+#define ACCEL_TIME 1 // s
+#define MAX_VEL_TIME 1.5 // s
+#define RPM_INCREMENT_PERIOD 10 // ms
 #define INITIAL_RPM 0.0
-#define MAX_RPM 50.0
-#define RPM_INCREMENT 10.0
+#define MAX_RPM 119.37
+#define RPM_INCREMENT MAX_RPM / (ACCEL_TIME / (RPM_INCREMENT_PERIOD/1000))
 #define MOTOR_NUM 1
 // #define MOTOR_NUM 3
 
@@ -147,7 +149,7 @@ void createTriangularVelocityProfile(byte addr) {
     // Increment velocity from INITIAL_RPM to MAX_RPM
     for (double vel = INITIAL_RPM; vel <= MAX_RPM; vel += RPM_INCREMENT) {
         setVelocity(addr, vel); // Set motor velocity
-        delay(1000); // Adjust this delay as needed
+        delay(10); // Adjust this delay as needed
         read(addr); // Read the actual velocity from the motor driver
         Serial.print(vel); // Send target velocity
         Serial.print(", ");
@@ -157,13 +159,39 @@ void createTriangularVelocityProfile(byte addr) {
     // Decrement velocity from MAX_RPM to INITIAL_RPM
     for (double vel = MAX_RPM; vel >= INITIAL_RPM; vel -= RPM_INCREMENT) {
         setVelocity(addr, vel); // Set motor velocity
-        delay(1000); // Adjust this delay as needed
+        delay(10); // Adjust this delay as needed
         read(addr); // Read the actual velocity from the motor driver
         Serial.print(vel); // Send target velocity
         Serial.print(", ");
         Serial.println(velocity); // Send actual velocity
     }
 }
+
+void createTrapezoidalVelocityProfile(byte addr) {
+    // Increment velocity from INITIAL_RPM to MAX_RPM
+    for (double vel = INITIAL_RPM; vel <= MAX_RPM; vel += RPM_INCREMENT) {
+        setVelocity(addr, vel); // Set motor velocity
+        delay(RPM_INCREMENT_PERIOD); // Adjust this delay as needed
+        read(addr); // Read the actual velocity from the motor driver
+        Serial.print(vel); // Send target velocity
+        Serial.print(", ");
+        Serial.println(velocity); // Send actual velocity
+    }
+
+    // Run at the max velocity for the specified time
+    delay(MAX_VEL_TIME);
+
+    // Decrement velocity from MAX_RPM to INITIAL_RPM
+    for (double vel = MAX_RPM; vel >= INITIAL_RPM; vel -= RPM_INCREMENT) {
+        setVelocity(addr, vel); // Set motor velocity
+        delay(RPM_INCREMENT_PERIOD); // Adjust this delay as needed
+        read(addr); // Read the actual velocity from the motor driver
+        Serial.print(vel); // Send target velocity
+        Serial.print(", ");
+        Serial.println(velocity); // Send actual velocity
+    }
+}
+
 void setup() {
     Serial.begin(9600);
     Wire.begin(); // INIT DEVICE AS I2C CONTROLLER
