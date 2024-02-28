@@ -132,6 +132,7 @@ int setPosition(byte addr, int32_t pos) {
 
 void setup() {
     Serial.begin(9600);
+    delay(2000);
     Wire.begin();
 }
 
@@ -142,7 +143,7 @@ void loop() {
     int32_t targetPos = revolutionsRequired * SHAFT_REV_TO_ENCODER_TICKS;
 
     // Set the motor position
-    int status = setPosition(motorAddr, targetPos);
+    int status = 0; //setPosition(motorAddr, targetPos);
     if (status == 0) {
         // Read the actual position
         delay(1000);
@@ -158,5 +159,13 @@ void loop() {
     // Stop the loop after moving 20 cm
     while (1) {
         delay(1000);
+        // Read the actual position
+        read(motorAddr);
+
+        // Print the target and actual positions
+        Serial.print("Target position: ");
+        Serial.println(targetPos);
+        Serial.print("Actual position: ");
+        Serial.println(encoderCount);
     }
 }

@@ -3,7 +3,7 @@
 #include <SmartMotor.h>
 
 // TEST PARAMETERS
-#define DESIRED_DISTANCE_CM 20 // Desired distance in centimeters
+#define DESIRED_DISTANCE_CM 15 // Desired distance in centimeters
 #define MOTOR_NUM 1
 
 // MOTOR PROPERTIES
@@ -13,9 +13,9 @@
 #define SHAFT_REV_TO_ENCODER_TICKS (ENCODER_TICKS_PER_REV * GEAR_RATIO)
 
 // PID PARAMETERS
-double Kp = 1.0;
-double Ki = 0.0;
-double Kd = 0.0;
+double Kp = 10; // 4
+double Ki = 100; // 16
+double Kd = 0.15; // 0.15
 
 // INIT SMART MOTORS
 SmartMotor motors[MOTOR_NUM] = {0x07};
@@ -39,25 +39,31 @@ void loop()
     // Tune the PID parameters
     motors[i].tunePositionPID(Kp, Ki, Kd);
 
-    // Set the motor position
+    // Reset the motor's position
+    motors[i].reset();
+
+    // Set the desired motor position
     motors[i].setPosition(targetPos);
 
     // Delay to allow the motor to reach the target position
-    delay(1000);
+    //delay(2000);
+    uint32_t start_time = millis();
 
-    // Read the actual position
-    double actualPos = motors[i].getPosition();
+    while (millis() - start_time < 5000) {
+      // Read the actual position
+      double actualPos = motors[i].getPosition();
 
-    // Calculate the position error
-    double positionError = targetPos - actualPos;
+      // Calculate the position error
+      double positionError = targetPos - actualPos;
 
-    // Send the target position, actual position, and position error to the serial port
-    Serial.print(targetPos);
-    Serial.print(",");
-    Serial.print(actualPos);
-    Serial.print(",");
-    Serial.println(positionError);
+      // Send the target position, actual position, and position error to the serial port
+      Serial.print(targetPos);
+      Serial.print(",");
+      Serial.print(actualPos);
+      Serial.print(",");
+      Serial.println(positionError);
+    }
   }
 
-  delay(1000);
+  //delay(2000);
 }
